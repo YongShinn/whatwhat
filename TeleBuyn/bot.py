@@ -265,10 +265,14 @@ def join_CartID(message):
         join_item = joinItem(CartID)
         join_dict[chat_id] = joinItem
         print(CartID)
+        markup3 = types.ReplyKeyboardMarkup(row_width=1)
+        itembtn1 = types.KeyboardButton('Done')
+        itembtn2 = types.KeyboardButton('Cancel')
+        markup3.add(itembtn1, itembtn2)
         msg = bot.reply_to(message, """Nice, please send over a screenshot of your desired product! (Up to 3 pieces) 🛍🛍🛍
 
 Remember to press 'Done' once you're ready!
-""")
+""", reply_markup=markup3)
         bot.register_next_step_handler(msg, join_screenshot)
     except Exception as e:
         bot.reply_to(message, 'oooops')
@@ -282,6 +286,8 @@ def join_screenshot(message):
 
 Cheers and good day to you! ☺️	
 """)
+        # elif message.text == 'Cancel':
+        #     bot.register_next_step_handler(message, join_CartID)
         else:
             screenshot = message.photo[0].file_id
             print(screenshot)
@@ -350,7 +356,8 @@ def edit_message(m):
     cid = m.chat.id
     cartID = m.text
     print(cartID)
-    bot.send_message(cid, """Well received, let us connect you to a Buyn admin ASAP!""")
+    bot.send_message(
+        cid, """Well received, let us connect you to a Buyn admin ASAP!""")
 
 
 @bot.message_handler(commands=['faq'])
