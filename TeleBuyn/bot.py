@@ -2,12 +2,12 @@
 # 756019399:AAHQ7u2zq_JHdf_bODDdwRUOFeW923qRquo
 
 import time
-import sql_create
+import database
 
 import telebot
 from telebot import types
 
-TOKEN = '756019399:AAHQ7u2zq_JHdf_bODDdwRUOFeW923qRquo'
+TOKEN = '733471431:AAFypDrvfCQks7q2n2E98b-SolYVryeAdbo'
 
 
 user_dict = {}
@@ -65,7 +65,7 @@ bot.set_update_listener(listener)  # register listener
 @bot.message_handler(commands=['start'])
 def command_start(m):
     cid = m.chat.id
-    sql_create.insert_users(m.chat.first_name)
+    database.add_users(m.chat.first_name)
     markup = types.ReplyKeyboardMarkup(row_width=1)
     itembtn1 = types.KeyboardButton('/create')
     itembtn2 = types.KeyboardButton('/join')
