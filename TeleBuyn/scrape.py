@@ -6,7 +6,7 @@ list_prod = ['as', 'sa']
 
 
 def scraping(retailer, link, qty):
-    if (retailer == """Colorpop: [$50]💄""" or retailer == "CP"):
+    if (retailer == """Colorpop: [$50]💄""" or retailer == "CLP"):
         page = requests.get(link)
         tree = html.fromstring(page.content)
         # This will create a list of buyers:
@@ -17,7 +17,7 @@ def scraping(retailer, link, qty):
         list_prod[1] = (prod_price[0])[8:12]
         return list_prod
 
-    elif (retailer == """Sephora: [$40]💄""" or retailer == """Sephora: [$110]💄""" or retailer == "SE"):
+    elif (retailer == """Sephora: [$40]💄""" or retailer == """Sephora: [$110]💄""" or retailer == "SEP"):
         page = requests.get(link)
         tree = html.fromstring(page.content)
         # This will create a list of buyers:
@@ -29,7 +29,7 @@ def scraping(retailer, link, qty):
         list_prod[1] = prod_price
         return list_prod
 
-    elif (retailer == """Uniqlo: [$60]👚""" or retailer == "UQ"):
+    elif (retailer == """Uniqlo: [$60]👚""" or retailer == "UNQ"):
         page = requests.get(link)
         tree = html.fromstring(page.content)
         # This will create a list of buyers:
@@ -40,7 +40,7 @@ def scraping(retailer, link, qty):
         list_prod[1] = (prod_price[0])[2:]
         return list_prod
 
-    elif (retailer == """Zara: [$79]👚""" or retailer == "ZA"):
+    elif (retailer == """Zara: [$79]👚""" or retailer == "ZAR"):
         page = requests.get(link)
         soup = BeautifulSoup(page.content)
         # tree = html.fromstring(page.content)
@@ -53,7 +53,7 @@ def scraping(retailer, link, qty):
             "#product > div.product-info-container._product-info-container > div > div.info-section > div.price._product-price")
         return list_prod
 
-    elif (retailer == """The Editor's Market: [$60]👚""" or retailer == "TE"):
+    elif (retailer == """The Editor's Market: [$60]👚""" or retailer == "TEM"):
         page = requests.get(link)
         tree = html.fromstring(page.content)
         # This will create a list of buyers:
@@ -64,7 +64,7 @@ def scraping(retailer, link, qty):
         list_prod[1] = (prod_price[0])[1:]
         return list_prod
 
-    elif (retailer == """The Tinsel Rack: [$100]👚""" or retailer == "TT"):
+    elif (retailer == """The Tinsel Rack: [$100]👚""" or retailer == "TTR"):
         page = requests.get(link)
         tree = html.fromstring(page.content)
         # This will create a list of buyers:
@@ -75,7 +75,7 @@ def scraping(retailer, link, qty):
         list_prod[1] = (prod_price[0])[4:]
         return list_prod
 
-    elif (retailer == """Abercrombie & Fitch: [$160]👚""" or retailer == "AN"):
+    elif (retailer == """Abercrombie & Fitch: [$160]👚""" or retailer == "ANF"):
         page = requests.get(link)
         tree = html.fromstring(page.content)
         count = 33
@@ -94,7 +94,7 @@ def scraping(retailer, link, qty):
         list_prod[1] = prod_price[0]
         return list_prod
 
-    elif (retailer == """Gardenpicks: [$50]🥜""" or retailer == "GP"):
+    elif (retailer == """Gardenpicks: [$50]🥜""" or retailer == "GPK"):
         page = requests.get(link)
         tree = html.fromstring(page.content)
         # This will create a list of buyers:
@@ -104,7 +104,7 @@ def scraping(retailer, link, qty):
         list_prod[0] = prod_name
         list_prod[1] = prod_price
 
-    elif (retailer == """MyProtein: [$100]💊""" or retailer == "MP"):
+    elif (retailer == """MyProtein: [$100]💊""" or retailer == "MPT"):
         page = requests.get(link)
         tree = html.fromstring(page.content)
         # This will create a list of buyers:
