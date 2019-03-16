@@ -22,10 +22,14 @@ c = db.cursor()
 # Create users table
 c.execute('''CREATE TABLE IF NOT EXISTS users (
     user_id INT(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+    chat_id INT(11),
     telegram_handle VARCHAR(255) NOT NULL, 
+    first_name VARCHAR(255) NOT NULL, 
+    latest_stage TINYINT UNSIGNED DEFAULT 0,
+    highest_stage TINYINT UNSIGNED DEFAULT 0,
     created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
     last_update TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
-    UNIQUE (telegram_handle)
+    UNIQUE (chat_id)
 )''')
 
 # Create retailers table

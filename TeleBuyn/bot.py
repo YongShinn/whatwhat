@@ -12,24 +12,25 @@ from threading import Thread
 TOKEN = '788731481:AAF30CxdR5WM5uZGTCKzAAzpySlTTPZN4CY'
 
 
-Customeritem = ['name', 'brand', 'link1', 'qty1',
-                'size1', 'color1', 'location', 'Prod_name', 1.1, 1.1]
+Customeritem = ['username', 'brand', 'link', 'qty',
+                'size', 'color', 'location', 'Prod_name', 1.1, 1.1]
+# Store username, retailer, link, quantity, size, color, location, produce_name, total price, unit price respectively
+# Used for creating of cart
 
 Joinitem = ['UCN', 'link1', 'qty1', 'size1',
             'color1', 'Prod_name', 1.1, 'name', 1.1]
+# Store UCD, link, quantity, size, color, produce_name, total price, ChatID, unit price respectively
+#Used for join
 
 Edititem = ['PTN', 'first_name', [], 'choice', 'properties', 'changes']
+# Store PTN, username, List of itemName & itemID, choice, properties, changes
+# Used in edit
 
 Backend_stuff = [1, 1, 1, '1', 1, '1', 1]
-# userID = 1
-# retailerID = 1
-# bubbleID = 1
-# UCD = '1'
-# itemID = 1
-# PTN = '1'
-# timer = 1
+# Store userID, retailerID, bubbleID, UCD, itemID, PTN, timer respectively
+# Used to store what was retrieve from the Backend
 
-commands = {  # command description used in the "help" command
+commands = {  # Initialisation of Command
     'start': 'Welcome to Buyn',
     'create': 'Create new CART',
     'join': 'Join an existing CART',
@@ -59,10 +60,10 @@ bot.set_update_listener(listener)  # register listener
 
 
 # handle the "/start" command
+# Creation of Home's menu and Button
 @bot.message_handler(commands=['start'])
 def command_start(m):
     cid = m.chat.id
-    # sql_create.insert_users(m.chat.first_name)
     markup = types.ReplyKeyboardMarkup(row_width=1, one_time_keyboard=True)
     itembtn1 = types.KeyboardButton('/create')
     itembtn2 = types.KeyboardButton('/join')
@@ -77,13 +78,14 @@ def command_start(m):
     bot.send_message(cid, "Welcome to Buyn", reply_markup=markup)
 
 
-# chat_action example (not a good one...)
+# handle the "/create" command
+# creating Retailer buttons
 @bot.message_handler(commands=['create'])
 def command_create(m):
     cid = m.chat.id
     Customeritem[0] = cid
     print(Customeritem[0])
-    bot.send_chat_action(cid, 'typing')  # show the bot "typing" (max. 5 secs)
+    bot.send_chat_action(cid, 'typing') 
     markup2 = types.ReplyKeyboardMarkup(row_width=1, one_time_keyboard=True)
     itembtn1 = types.KeyboardButton('Colorpop: [$50]💄')
     itembtn2 = types.KeyboardButton('Sephora: [$40]💄')
@@ -121,9 +123,10 @@ Gardenpicks: $50 🥜 http://gardenpicks.com.sg/
 MyProtein: $100 💊 http://gardenpicks.com.sg/
 
 Can you please give us the name of the brand that you will be shopping from? 📥""", reply_markup=markup2)
-    bot.register_next_step_handler(msg, create_chooseBrand)
+    bot.register_next_step_handler(msg, create_chooseBrand) # display msg and jumping to next function
 
-
+# firstly if its the first time
+# else store retailer option and asking for link
 def create_chooseBrand(message):
     try:
         if (message == Customeritem[1]):
@@ -134,20 +137,22 @@ def create_chooseBrand(message):
             chat_id = message.chat.id
             Customeritem[1] = message.text
             print(Customeritem[1])
+            Backend_stuff[2] = scrape.checkRetail(Customeritem[1])
+            print(Backend_stuff[2])
             markup3 = types.ReplyKeyboardMarkup(
                 row_width=1, one_time_keyboard=True)
             itembtn1 = types.KeyboardButton('Cancel')
             markup3.add(itembtn1)
-            msg = bot.reply_to(message, """Send Link1""", reply_markup=markup3)
-            bot.register_next_step_handler(msg, create_screenshot)
+            msg = bot.reply_to(message, """Send Link""", reply_markup=markup3)
+            bot.register_next_step_handler(msg, create_screenshot) # display msg and jumping to next function
     except Exception as e:
         bot.reply_to(message, 'oooops')
 
 #            #
 # SCREENSHOT #
-#            # base price
-
-
+#            # 
+# Check if the user previously try to cancel
+# Ask for quantity
 def create_screenshot(message):
     try:
         chat_id = message.chat.id
@@ -157,7 +162,6 @@ def create_screenshot(message):
             link1 = message.text
             Customeritem[2] = link1
             print(Customeritem[2])
-            # print(scrape.scraping(Customeritem[1], Customeritem[2], 'NA'))
             markup5 = types.ReplyKeyboardMarkup(
                 row_width=1, one_time_keyboard=True)
             itembtn1 = types.KeyboardButton('1')
@@ -166,131 +170,159 @@ def create_screenshot(message):
             itembtn4 = types.KeyboardButton('Cancel')
             markup5.add(itembtn1, itembtn2, itembtn3, itembtn4)
             msg = bot.reply_to(message, """Qty?""", reply_markup=markup5)
-            bot.register_next_step_handler(msg, create_screenshot_qty)
+            bot.register_next_step_handler(msg, create_screenshot_qty) # display msg and jumping to next function
     except Exception as e:
         bot.reply_to(message, 'oooops')
 #           #
 # QUANTITY  #
 #           #
-
-
+# Check if the user previously try to cancel
+# Ask for Size
 def create_screenshot_qty(message):
     try:
         chat_id = message.chat.id
-        qty1 = message.text
-        Customeritem[3] = qty1
-        print(Customeritem[3])
-        markup6 = types.ReplyKeyboardMarkup(
-            row_width=1, one_time_keyboard=True)
-        itembtn1 = types.KeyboardButton('XS')
-        itembtn2 = types.KeyboardButton('S')
-        itembtn3 = types.KeyboardButton('M')
-        itembtn4 = types.KeyboardButton('L')
-        itembtn5 = types.KeyboardButton('XL')
-        itembtn6 = types.KeyboardButton('Cancel')
-        markup6.add(itembtn1, itembtn2, itembtn3, itembtn4, itembtn5, itembtn6)
-        msg = bot.reply_to(message, """Size?""", reply_markup=markup6)
-        bot.register_next_step_handler(msg, create_screenshot_Size)
+        if message.text == 'Cancel':
+            Thread(target=command_start(message)).start()
+        else:
+            qty1 = message.text
+            Customeritem[3] = qty1
+            print(Customeritem[3])
+            markup6 = types.ReplyKeyboardMarkup(row_width=1, one_time_keyboard=True)
+            itembtn1 = types.KeyboardButton('XS')
+            itembtn2 = types.KeyboardButton('S')
+            itembtn3 = types.KeyboardButton('M')
+            itembtn4 = types.KeyboardButton('L')
+            itembtn5 = types.KeyboardButton('XL')
+            itembtn6 = types.KeyboardButton('Cancel')
+            markup6.add(itembtn1, itembtn2, itembtn3, itembtn4, itembtn5, itembtn6)
+            msg = bot.reply_to(message, """Size?""", reply_markup=markup6)
+            bot.register_next_step_handler(msg, create_screenshot_Size) # display msg and jumping to next function
     except Exception as e:
         bot.reply_to(message, 'oooops')
 
 #           #
 #   SIZE    #
 #           #
-
-
+# Check if the user previously try to cancel
+# Ask for Color
 def create_screenshot_Size(message):
     try:
         chat_id = message.chat.id
-        size1 = message.text
-        Customeritem[4] = size1
-        print(Customeritem[4])
-        msg = bot.reply_to(message, """Color?""")
-        bot.register_next_step_handler(msg, create_screenshot_Color)
+        if message.text == 'Cancel':
+            Thread(target=command_start(message)).start()
+        else:
+            size1 = message.text
+            Customeritem[4] = size1
+            print(Customeritem[4])
+            msg = bot.reply_to(message, """Color?""")
+            bot.register_next_step_handler(msg, create_screenshot_Color) # display msg and jumping to next function
     except Exception as e:
         bot.reply_to(message, 'oooops')
 
 #           #
 #   COLOR   #
 #           #
-
-
+# Check if the user previously try to cancel
+# Display confirmation
 def create_screenshot_Color(message):
     try:
         chat_id = message.chat.id
         color1 = message.text
         Customeritem[5] = color1
         print(Customeritem[5])
-        markup7 = types.ReplyKeyboardMarkup(row_width=1)
+        markup7 = types.ReplyKeyboardMarkup(row_width=1, one_time_keyboard=True)
         itembtn1 = types.KeyboardButton('Yes')
         itembtn2 = types.KeyboardButton('No')
         markup7.add(itembtn1, itembtn2)
         Customeritem[7] = scrape.scraping(
-            Customeritem[1], Customeritem[2], Customeritem[3])[0]
+            Customeritem[1], Customeritem[2], Customeritem[3])[0] # scraping for prodName
         print(Customeritem[7])
         Customeritem[9] = float(scrape.scraping(
-            Customeritem[1], Customeritem[2], Customeritem[3])[1])
+            Customeritem[1], Customeritem[2], Customeritem[3])[1]) #scraping for unitPrice
         Customeritem[8] = float(scrape.scraping(
-            Customeritem[1], Customeritem[2], Customeritem[3])[1]) * float(Customeritem[3])
-        # print("""Product Name: """ + scrape.scraping(Customeritem[1], Customeritem[2], "NA")[0] + '\nPrice: ' + scrape.scraping(
-        #         Customeritem[1], Customeritem[2], "NA")[1] + '\nQty: ' + Customeritem[3] + '\nSize: ' + Customeritem[4] + '\nColor: ' + Customeritem[5])
+            Customeritem[1], Customeritem[2], Customeritem[3])[1]) * float(Customeritem[3]) # Multiplication for totalPrice
         msg = bot.reply_to(message, """Title: """ + Customeritem[7] + '\nPrice: $' + str(Customeritem[8]) + '\nQty: ' + Customeritem[3] +
                            '\nSize: ' + Customeritem[4] + '\nColor: ' + Customeritem[5] + "\nDo you want to confirm this order?", reply_markup=markup7)
-        bot.register_next_step_handler(msg, create_confirm)
+        bot.register_next_step_handler(msg, create_bubbletype) # display msg and jumping to next function
     except Exception as e:
         bot.reply_to(message, 'oooops')
-
 #              #
 # Confirmation #
 #              #
-
-
-def create_confirm(message):
+# Check if the user previously try to cancel
+# Display location
+def create_bubbletype(message):
     try:
         chat_id = message.chat.id
         confirmation = message.text
-        if (confirmation == 'Yes'):
-            markup8 = types.ReplyKeyboardMarkup(row_width=1)
+        if (Backend_stuff[6] == 1): # checking if bubbleID is created else dont generate another bubbleID
+            if (confirmation == 'Yes'):
+                markup8 = types.ReplyKeyboardMarkup(row_width=1, one_time_keyboard=True)
+                itembtn1 = types.KeyboardButton('Public')
+                itembtn2 = types.KeyboardButton('Private')
+                markup8.add(itembtn1, itembtn2)
+                msg = bot.reply_to(message, """Would like this cart to be private or public""", reply_markup=markup8)
+                bot.register_next_step_handler(msg, create_confirm) # display msg and jumping to next function
+            else:
+                Thread(target=command_start(message)).start()
+        else:
+            Thread(target=create_location(message)).start()
+
+    except Exception as e:
+        msg = bot.reply_to(message, """""", reply_markup=markup8)
+        bot.reply_to(msg, 'oooops')
+
+
+#              #
+# Bubble_type  #
+#              #
+# Check if the user previously try to cancel
+# Display location
+def create_confirm(message):
+    try:
+        chat_id = message.chat.id
+        bubbletype = message.text
+        if (bubbletype == 'Public'):
+            markup7 = types.ReplyKeyboardMarkup(row_width=1, one_time_keyboard=True)
             itembtn1 = types.KeyboardButton('UTown')
             itembtn2 = types.KeyboardButton('Sheares')
             itembtn3 = types.KeyboardButton('Kent Ridge')
-            markup8.add(itembtn1, itembtn2, itembtn3)
+            markup7.add(itembtn1, itembtn2, itembtn3)
             msg = bot.reply_to(message, """Aweasome, can we know where you want your items delivered to? 
 Utown: Delivery will be done to cheers 
 Sheares: SH Lobby
-KR: KR Lobby""", reply_markup=markup8)
+KR: KR Lobby""", reply_markup=markup7)
+            bot.register_next_step_handler(msg, create_location) # display msg and jumping to next function
+        elif (bubbletype == 'Private'):
+            msg = bot.reply_to(message, "Aweasome, can we know where you want your items deliverd to?")
             bot.register_next_step_handler(msg, create_location)
-        else:
-            Thread(target=command_start(message)).start()
-
     except Exception as e:
         bot.reply_to(message, 'oooops')
 
 #          #
 # Location #
 #          #
-
-
+# Check if the user previously try to cancel
+# Asking for continue shopping
 def create_location(message):
     try:
-        chat_id = message.chat.id
-        location = message.text
-        print(location)
-        Customeritem[6] = location
-        Backend_stuff[0] = database.add_user(message.chat.first_name)
-        print(Backend_stuff[0])
-        if (Backend_stuff[6] == 1):
+        if (Backend_stuff[6] == 1): # checking if bubbleID is created else dont generate another bubbleID
+            chat_id = message.chat.id
+            location = message.text
+            Customeritem[6] = location
+            print(Customeritem[6])
+            Backend_stuff[0] = database.add_user(chat_id, message.chat.username, message.chat.first_name) # adding username to backend
+            print(Backend_stuff[0])
             Backend_stuff[6] = Backend_stuff[6] + 1
             print(Backend_stuff[6])
             Backend_stuff[2], Backend_stuff[3] = database.add_bubble(
                 Backend_stuff[1], Backend_stuff[0], Customeritem[6])
             print(Backend_stuff[2])
         Backend_stuff[4] = database.add_item(
-            1, Customeritem[2], Customeritem[7], Customeritem[9], Customeritem[4], Customeritem[5], int(Customeritem[3]))
-        #itemID = database.add_item(1, 'www.blah4.com', 'purple tee', 20.25, 'EU 34', 'purple', 2)
+            Backend_stuff[1], Customeritem[2], Customeritem[7], Customeritem[9], Customeritem[4], Customeritem[5], int(Customeritem[3])) # adding item into backend and itemID
         print(Backend_stuff[4])
         Backend_stuff[5] = database.add_order(
-            Backend_stuff[2], Backend_stuff[0], Backend_stuff[4])
+            Backend_stuff[2], Backend_stuff[0], Backend_stuff[4]) # adding order and get PTN
         print(Backend_stuff[5])
         markup9 = types.ReplyKeyboardMarkup(row_width=1)
         itembtn1 = types.KeyboardButton('Yes')
@@ -299,15 +331,13 @@ def create_location(message):
         msg = bot.reply_to(
             message, """Do you want to continue shopping with the same retailer?""", reply_markup=markup9)
         bot.register_next_step_handler(msg, create_continue)
-        # Thread(target=command_start(message)).start()
     except Exception as e:
         bot.reply_to(message, 'oooops')
 
 #          #
 # continue #
 #          #
-
-
+# Checking if need to continue else display UCD and PTN
 def create_continue(message):
     try:
         chat_id = message.chat.id
@@ -342,17 +372,20 @@ For now, get your friends to join your Cart! :-)""")
 # add order() take PTN
 # Replace all PTN relating to that user
 
-
+# handle the "/join" command
+# asking for UCN
 @bot.message_handler(commands=['join'])
 def command_join(m):
     cid = m.chat.id
     Joinitem[7] = cid
-    bot.send_chat_action(cid, 'typing')  # show the bot "typing" (max. 5 secs)
+    bot.send_chat_action(cid, 'typing') 
     msg = bot.reply_to(
         m, """Hello there good looking 🤩, seems likes you’re joining a cart. Can we have the Unique Cart Number (UCN) please?""")
     bot.register_next_step_handler(msg, join_CartID)
 
-
+#compare UCD to check if its the first time
+#if first timer, ignore cariD and ask for link
+#else store cartId and ask for link
 def join_CartID(message):
     try:
 
@@ -380,7 +413,7 @@ Remember to press 'Done' once you're ready!
     except Exception as e:
         bot.reply_to(message, 'oooops')
 
-
+#store link and ask for qty
 def join_link(message):
     try:
         chat_id = message.chat.id
@@ -390,7 +423,6 @@ def join_link(message):
             link1 = message.text
             print(link1)
             Joinitem[1] = link1
-            # Customeritem[7] = scrape.scraping((Joinitem[0])[:3], Joinitem[1], "NA")[0]
             markup11 = types.ReplyKeyboardMarkup(
                 row_width=1, one_time_keyboard=True)
             itembtn1 = types.KeyboardButton('1')
@@ -403,7 +435,7 @@ def join_link(message):
     except Exception as e:
         bot.reply_to(message, 'oooops')
 
-
+#store qty and ask for size
 def join_qty(message):
     try:
         chat_id = message.chat.id
@@ -428,7 +460,7 @@ def join_qty(message):
     except Exception as e:
         bot.reply_to(message, 'oooops')
 
-
+#Store size and ask for color
 def join_size(message):
     try:
         chat_id = message.chat.id
@@ -447,7 +479,7 @@ def join_size(message):
     except Exception as e:
         bot.reply_to(message, 'oooops')
 
-
+#store color and display confirmation
 def join_color(message):
     try:
         chat_id = message.chat.id
@@ -475,7 +507,7 @@ def join_color(message):
     except Exception as e:
         bot.reply_to(message, 'oooops')
 
-
+# check confirmation and store all required ID
 def join_confirm(message):
     try:
         chat_id = message.chat.id
@@ -506,7 +538,7 @@ def join_confirm(message):
     except Exception as e:
         bot.reply_to(message, 'oooops')
 
-
+# check continue and display PTN UCD
 def join_continue(message):
     try:
         chat_id = message.chat.id
@@ -540,17 +572,18 @@ For now, get your friends to join your Cart! :-)""")
 # Send qty col.... Take itemID
 # send order transsaction ID
 
-
+# /edit commmand
+#ask for ptn
 @bot.message_handler(commands=['edit'])
 def command_edit(m):
     cid = m.chat.id
     Edititem[0] = cid
-    bot.send_chat_action(cid, 'typing')  # show the bot "typing" (max. 5 secs)
+    bot.send_chat_action(cid, 'typing')
     msg = bot.reply_to(
         m, """Hey there, change of mind? No problem! Can we have your Personal Transaction Number (PTN) for your purchase please?""")
     bot.register_next_step_handler(msg, edit_choice)
 
-
+# retrieve all item relate to PTN
 def edit_choice(m):
     try:
         cid = m.chat.id
@@ -576,7 +609,7 @@ def edit_choice(m):
     except Exception as e:
         bot.reply_to(m, 'oooops')
 
-
+# store choice and ask for properties to edit
 def edit_properties(m):
     try:
         cid = m.chat.id
@@ -596,7 +629,7 @@ def edit_properties(m):
     except Exception as e:
         bot.reply_to(m, 'oooops')
 
-
+# store properties and ask for the changes
 def edit_changes(m):
     try:
         cid = m.chat.id
@@ -608,7 +641,7 @@ def edit_changes(m):
     except Exception as e:
         bot.reply_to(m, 'oooops')
 
-
+# store the changes and use the edit function
 def edit_end(m):
     try:
         cid = m.chat.id
