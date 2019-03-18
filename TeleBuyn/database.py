@@ -110,31 +110,27 @@ def add_retailer(retailer_name, acronym, website, free_shipping_amount):
     return retailer_id
 
 
-def add_bubble(retailer_id, user_id, shipping_location):
+def add_bubble(retailer_id, user_id, bubble_type):
     try:
         # Check if retailer and user id exists
         c.execute(
             "SELECT acronym FROM retailers WHERE retailer_id = %s LIMIT 1", (retailer_id,))
         acronym = c.fetchone()[0]
-        print('acro', acronym)
         c.execute(
             "SELECT user_id FROM users WHERE user_id = %s LIMIT 1", (user_id,))
         c.fetchone()[0]
 
-        # generate UCN and add row
+        # generate UCN and add new row
         ucn = ''.join(
             [random.choice(string.ascii_letters + string.digits) for n in range(4)])
-        if shipping_location == 'UTown':
-            shipping_location = 'UT'
-        elif shipping_location == 'Sheares':
-            shipping_location = 'SH'
-        elif shipping_location == 'Kent Ridge':
-            shipping_location = 'KR'
-        else:
-            shipping_location = 'PR'
-        ucn = acronym + ucn + shipping_location
-        query = 'INSERT INTO bubbles (ucn, retailer_id, user_id, shipping_location) VALUES (%s, %s, %s, %s)'
-        values = (ucn, retailer_id, user_id, shipping_location)
+        ucn_last = ''
+        if bubble_type == 'Private':
+            ucn_last = 'PRI'
+        elif bubble_type == 'Public':
+            ucn_last = 'PUB'
+        ucn = acronym + ucn + ucn_last
+        query = 'INSERT INTO bubbles (ucn, retailer_id, user_id, bubble_type) VALUES (%s, %s, %s, %s)'
+        values = (ucn, retailer_id, user_id, bubble_type)
         c.execute(query, values)
         db.commit()
         bubble_id = c.lastrowid
@@ -167,12 +163,9 @@ def add_item(retailer_id, web_link, item_name, unit_price, size, color, quantity
         return False
 
 
-def add_order(bubble_id, user_id, item_id):
+def add_order(bubble_id, user_id, item_id, shipping_location):
     try:
-        # Check if bubble, user and item id exists
-        c.execute(
-            "SELECT bubble_id FROM bubbles WHERE bubble_id = %s LIMIT 1", (bubble_id,))
-        c.fetchone()[0]
+        # Check if user and item id exists
         c.execute(
             "SELECT user_id FROM users WHERE user_id = %s LIMIT 1", (user_id,))
         c.fetchone()[0]
@@ -181,15 +174,37 @@ def add_order(bubble_id, user_id, item_id):
         c.fetchone()[0]
 
         # generate PTN and add row
-        c.execute('''SELECT acronym FROM bubbles 
+        c.execute('''SELECT acronym, user_id, bubble_type FROM bubbles 
                     INNER JOIN retailers USING (retailer_id) 
-                    WHERE bubble_id = %s''', (bubble_id,))
-        acronym = c.fetchone()[0]
+                    WHERE bubble_id = %s LIMIT 1''', (bubble_id,))
+        acronym, bubble_creator_id, bubble_type = c.fetchone()
+        print(bubble_type)
         ptn = ''.join(
             [random.choice(string.ascii_letters + string.digits) for n in range(4)])
-        ptn = acronym + ptn
-        query = 'INSERT INTO orders (bubble_id, user_id, item_id, ptn) VALUES (%s, %s, %s, %s)'
-        values = (bubble_id, user_id, item_id, ptn)
+        ptn_last = ''
+        if bubble_type == 'Private':
+            ptn_last = 'PRI'
+            # Get bubble creator address
+            c.execute(
+                'SELECT address FROM users WHERE user_id = %s LIMIT 1', (bubble_creator_id,))
+            bubble_creator_address = c.fetchone()[0]
+            print('bubble creator address: ', bubble_creator_address)
+
+            # Update user's address if user is bubble creator, else, use bubble creator address as shipping location
+            if bubble_creator_id == user_id and bubble_creator_address is None:
+                c.execute('UPDATE users SET address = %s WHERE user_id = %s',
+                          (shipping_location, user_id))
+                db.commit()
+            else:
+                shipping_location = bubble_creator_address
+        elif bubble_type == 'Public':
+            if shipping_location == 'UTown':
+                ptn_last = 'UT'
+            if shipping_location == 'CLB':
+                ptn_last = 'CLB'
+        ptn = acronym + ptn + ptn_last
+        query = 'INSERT INTO orders (bubble_id, user_id, item_id, ptn, shipping_location) VALUES (%s, %s, %s, %s, %s)'
+        values = (bubble_id, user_id, item_id, ptn, shipping_location)
         c.execute(query, values)
         db.commit()
         print('order added')
@@ -421,6 +436,30 @@ def update_stage(telegram_handle, latest_stage):
         return False
 
 
+def address_exist(telegram_handle):
+    try:
+        c.execute(
+            'SELECT address FROM users WHERE telegram_handle = %s LIMIT 1', (telegram_handle,))
+        address = c.fetchone()[0]
+        if address is None:
+            return False
+
+        return address
+    except:
+        return False
+
+
+def edit_address(telegram_handle, address):
+    try:
+        c.execute('UPDATE users SET address = %s WHERE telegram_handle = %s',
+                  (address, telegram_handle))
+        db.commit()
+
+        return True
+    except:
+        return False
+
+
 # TO DO
 '''
 1. TIMESTAMP no default value allowed in server? no more than 2 CURRENT TIME
@@ -431,7 +470,7 @@ def update_stage(telegram_handle, latest_stage):
 # print(bubble_full(1))                        #bubble_id
 # print(get_full_bubble_users(1))         #bubble_id
 # print(add_user(388583731, 'jonasanderson', 'Jonas'))                    #chat_id, telegram_handlr, first_name
-#print(add_user(388583731, 'timmydoc', 'Timmy'))
+#print(add_user(1234, 'timmydoc', 'Timmy'))
 # retailer_name, acronym, website, free_shipping_amount
 add_retailer('Uniqlo', 'UNQ', 'https://www.uniqlo.com', 60)
 add_retailer('ColourPop', 'CLP', 'https://colourpop.com/', 50)
@@ -443,26 +482,31 @@ add_retailer('Abercrombie And Fitch', 'ANF',
              'https://www.abercrombie.sg/en_SG/home', 160)
 add_retailer('Myprotein', 'MPT', 'https://www.myprotein.com.sg/', 100)
 
-# print(add_bubble(1, 1, 'UTown'))               #retailer_id, user_id, shipping_location
+# print(add_bubble(6, 1, 'Private'))               #retailer_id, user_id, bubble_type
 
-# print(add_item(1, 'www.blah1.com', 'purple tee', 10, 'EU 34', 'purple', 2))    #retailer_id, web_link, name, unit_price, size, color, quantity
+# print(add_item(6, 'www.blah1.com', 'purple tee', 20, 'EU 34', 'purple', 2))    #retailer_id, web_link, name, unit_price, size, color, quantity
+#print(add_item(6, 'www.blah2.com', 'purple tee', 15, 'EU 34', 'purple', 3))
 
-# print(add_order(1, 2, 1))                   #bubble_id, user_id, item_id
+# print(add_order(2, 2, 2, 'UTown'))                   #bubble_id, user_id, item_id, shipping_location
 
-# print(retrieve_bubble('6PR8UT'))            #ucn
+# print(retrieve_bubble('ANFrpO5PUB'))            #ucn
 
-# print(edit_get_item('UNQBCot'))                #ptn
+# print(edit_get_item('ANFwISVCLB'))                #ptn
 
 # print(edit_item(1, 'delete', 'na'))             #item_ID, ‘size’, ‘XS
 
 # print(replace_ptn('atRF', 10, 1))           #last_ptn, bubble_ID, user_ID
 
-# print(query_joined_bubbles('tommy'))        #telegram_handle
+# print(query_joined_bubbles('timmydoc'))        #telegram_handle
 
-# print(query_bubble_status('L3N1UT'))        #ucn
+# print(query_bubble_status('ANFkS2ePRI'))        #ucn
 
-# print(query_items('tommy'))                 #telegram_handle
+# print(query_items('timmydoc'))                 #telegram_handle
 
 # recommend('Jonas', 'uniqlo')                #telegram_handle, retailer
 
-print(update_stage('jonasanderson', 1))  # telegram_handle, latest_stage
+# print(update_stage('timmydoc', 1))     #telegram_handle, latest_stage
+
+# print(address_exist('timmydoc'))        #telegram_handle
+
+# print(edit_address('timmydoc', 'city'))  #telegram_handle, address

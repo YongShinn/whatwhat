@@ -11,6 +11,7 @@ from threading import Thread
 
 TOKEN = '788731481:AAF30CxdR5WM5uZGTCKzAAzpySlTTPZN4CY'
 
+bubbletype = ['asd', 'asd']
 
 Customeritem = ['username', 'brand', 'link', 'qty',
                 'size', 'color', 'location', 'Prod_name', 1.1, 1.1]
@@ -281,8 +282,8 @@ def create_bubbletype(message):
 def create_confirm(message):
     try:
         chat_id = message.chat.id
-        bubbletype = message.text
-        if (bubbletype == 'Public'):
+        bubbletype[0] = message.text
+        if (bubbletype[0] == 'Public'):
             markup7 = types.ReplyKeyboardMarkup(row_width=1, one_time_keyboard=True)
             itembtn1 = types.KeyboardButton('UTown')
             itembtn2 = types.KeyboardButton('Sheares')
@@ -293,7 +294,7 @@ Utown: Delivery will be done to cheers
 Sheares: SH Lobby
 KR: KR Lobby""", reply_markup=markup7)
             bot.register_next_step_handler(msg, create_location) # display msg and jumping to next function
-        elif (bubbletype == 'Private'):
+        elif (bubbletype[0] == 'Private'):
             msg = bot.reply_to(message, "Aweasome, can we know where you want your items deliverd to?")
             bot.register_next_step_handler(msg, create_location)
     except Exception as e:
@@ -316,13 +317,13 @@ def create_location(message):
             Backend_stuff[6] = Backend_stuff[6] + 1
             print(Backend_stuff[6])
             Backend_stuff[2], Backend_stuff[3] = database.add_bubble(
-                Backend_stuff[1], Backend_stuff[0], Customeritem[6])
+                Backend_stuff[1], Backend_stuff[0], bubbletype[0])
             print(Backend_stuff[2])
         Backend_stuff[4] = database.add_item(
             Backend_stuff[1], Customeritem[2], Customeritem[7], Customeritem[9], Customeritem[4], Customeritem[5], int(Customeritem[3])) # adding item into backend and itemID
         print(Backend_stuff[4])
         Backend_stuff[5] = database.add_order(
-            Backend_stuff[2], Backend_stuff[0], Backend_stuff[4]) # adding order and get PTN
+            Backend_stuff[2], Backend_stuff[0], Backend_stuff[4], Customeritem[6]) # adding order and get PTN
         print(Backend_stuff[5])
         markup9 = types.ReplyKeyboardMarkup(row_width=1)
         itembtn1 = types.KeyboardButton('Yes')
