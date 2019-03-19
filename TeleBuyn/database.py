@@ -223,6 +223,7 @@ def recommend(telegram_handle, brand):
         c.execute(
             'SELECT user_id FROM users WHERE telegram_handle = %s LIMIT 1', (telegram_handle,))
         user_id = c.fetchone()[0]
+        print(user_id)
         c.execute(
             'INSERT INTO recommendations (user_id, brand) VALUES (%s, %s)', (user_id, brand))
         db.commit()
@@ -507,6 +508,6 @@ add_retailer('Myprotein', 'MPT', 'https://www.myprotein.com.sg/', 100)
 
 # print(update_stage('timmydoc', 1))     #telegram_handle, latest_stage
 
-# print(address_exist('timmydoc'))        #telegram_handle
+# print(address_exist('jonasanderson'))        #telegram_handle
 
 # print(edit_address('timmydoc', 'city'))  #telegram_handle, address

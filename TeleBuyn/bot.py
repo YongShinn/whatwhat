@@ -72,7 +72,7 @@ def command_start(m):
     itembtn4 = types.KeyboardButton('/help')
     itembtn5 = types.KeyboardButton('/brandlist')
     itembtn6 = types.KeyboardButton('/recommendbrand')
-    itembtn7 = types.KeyboardButton('/return')
+    itembtn7 = types.KeyboardButton('/statue')
     itembtn8 = types.KeyboardButton('/faq')
     markup.add(itembtn1, itembtn2, itembtn3, itembtn4,
                itembtn5, itembtn6, itembtn7, itembtn8)
@@ -735,6 +735,111 @@ def command_help(m):
 
 We hope this helps. If you have any further queries feel free to visit our /faq section!
 """)
+
+@bot.message_handler(commands=['recommendbrand'])
+def command_recommend(m):
+    try:
+        cid = m.chat.id
+        bot.send_chat_action(cid, 'typing')    
+        msg = bot.reply_to(m, """Hey there! Please tell us your desired brand who is not currently on the platform.""")
+        bot.register_next_step_handler(msg, recommend_input)
+    except Exception as e:
+        bot.reply_to(m, 'oooops')
+
+def recommend_input(m):
+    try:
+        cid = m.chat.id
+        telegram_handle = m.chat.username
+        brand = m.text
+        database.add_user(cid, telegram_handle, m.chat.first_name)
+        print(brand)
+        if (database.recommend(telegram_handle, brand)):
+            bot.send_message(cid, """Thank You""")
+        else:
+            bot.send_message(cid, """Sorry, there's some technical issues so the recommended brand wasn't stored""")
+    except Exception as e:
+        bot.reply_to(m, 'oooops')
+
+@bot.message_handler(commands=['statue'])
+def command_statue(m):
+    try:
+        cid = m.chat.id
+        markup18 = types.ReplyKeyboardMarkup(row_width=1, one_time_keyboard=True)
+        itembtn1 = types.KeyboardButton('Query your bubble')
+        itembtn2 = types.KeyboardButton('Query the bubble statue')
+        itembtn3 = types.KeyboardButton('Query my items')
+        itembtn4 = types.KeyboardButton('Query my address')
+        markup18.add(itembtn1, itembtn2, itembtn3, itembtn4)
+        msg = bot.reply_to(
+            m, """What you want to query?""", reply_markup=markup18)
+        bot.register_next_step_handler(msg, statue_input)
+    except Exception as e:
+        bot.reply_to(m, 'oooops')
+
+def statue_input(m):
+    try:
+        cid = m.chat.id
+        if (m.text == 'Query your bubble'):
+            msg = bot.reply_to(m, "Can i have your username?")
+            bot.register_next_step_handler(msg, statue_bubble)
+        elif(m.text == 'Query the bubble statue'):
+            msg = bot.reply_to(m, "Can i have your UCN?")
+            bot.register_next_step_handler(msg, statue_bubbleStatue)
+        elif(m.text == 'Query my items'):
+            msg = bot.reply_to(m, "Can i have your username?")
+            bot.register_next_step_handler(msg, statue_item)
+        elif(m.text == 'Query my address'):
+            msg = bot.reply_to(m, "Can i have your username?")
+            bot.register_next_step_handler(msg, statue_address)
+    except Exception as e:
+        bot.reply_to(m, 'oooops')
+
+def statue_bubble(m):
+    try:
+        print(m.text)
+        print(database.query_joined_bubbles(m.text))
+        list = database.query_joined_bubbles(m.text)
+        msg = ""
+        for x in list:
+            msg = msg + x[0] + ":" + x[1] + "\n"
+        print(msg)
+        bot.send_message(m.chat.id, """Your UCN and PTN:
+""" + msg)
+    except Exception as e:
+        bot.reply_to(m, 'oooops')
+
+def statue_bubbleStatue(m):
+    try:
+        print(m.text)
+        retailer, currentAmount, neededAmount = database.query_bubble_status(m.text)
+        print(database.query_bubble_status(m.text))
+        bot.send_message(m.chat.id, ("""Your current """+ retailer + """ cart is """ + str(currentAmount) + """/""" + str(neededAmount)))
+    except Exception as e:
+        bot.reply_to(m, 'oooops')       
+def statue_item(m):
+    try:
+        print(m.text)
+        print(database.query_items(m.text))
+        list = database.query_items(m.text)
+        msg = ""
+        for x in list:
+            msg = msg + "PTN: " + x[0] + "\nRetailer: " + x[1] + "\nProduce name: " + x[2] + "\nPrice: " + str(x[3]) + "\nSize: " + x[4] + "\nColour: " + x[5] + "\nQuantity: "+ str(x[6]) + "\n\n"
+        print(msg)
+        bot.send_message(m.chat.id, msg)
+    except Exception as e:
+        bot.reply_to(m, 'oooops')       
+def statue_address(m):
+    try:
+        print(m.text)
+        if (database.address_exist(m.text) == False):
+            bot.send_message(m.chat.id, "Sorry, there is no address registered under this username")
+        else:
+            bot.send_message(m.chat.id, "Your current address is " + database.address_exist(m.text))
+        print(database.address_exist(m.text))
+    except Exception as e:
+        bot.reply_to(m, 'oooops')       
+
+
 
 
 # filter on a specific message
