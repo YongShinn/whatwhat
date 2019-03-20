@@ -13,6 +13,8 @@ TOKEN = '788731481:AAF30CxdR5WM5uZGTCKzAAzpySlTTPZN4CY'
 
 bubbletype = ['asd', 'asd']
 
+finalMsg = """Final shopping cart:\n"""
+
 Customeritem = ['username', 'brand', 'link', 'qty',
                 'size', 'color', 'location', 'Prod_name', 1.1, 1.1]
 # Store username, retailer, link, quantity, size, color, location, produce_name, total price, unit price respectively
@@ -244,6 +246,8 @@ def create_screenshot_Color(message):
             Customeritem[1], Customeritem[2], Customeritem[3])[1]) * float(Customeritem[3]) # Multiplication for totalPrice
         msg = bot.reply_to(message, """Title: """ + Customeritem[7] + '\nPrice: $' + str(Customeritem[8]) + '\nQty: ' + Customeritem[3] +
                            '\nSize: ' + Customeritem[4] + '\nColor: ' + Customeritem[5] + "\nDo you want to confirm this order?", reply_markup=markup7)
+        global finalMsg
+        finalMsg = finalMsg + """Title: """ + Customeritem[7] + '\nPrice: $' + str(Customeritem[8]) + '\nQty: ' + Customeritem[3] + '\nSize: ' + Customeritem[4] + '\nColor: ' + Customeritem[5] + "\n\n"
         bot.register_next_step_handler(msg, create_bubbletype) # display msg and jumping to next function
     except Exception as e:
         bot.reply_to(message, 'oooops')
@@ -349,15 +353,10 @@ def create_continue(message):
             Thread(target=create_chooseBrand(Customeritem[1])).start()
         else:
             if (database.replace_ptn(Backend_stuff[5], Backend_stuff[2], Backend_stuff[0])):
-                bot.send_message(chat_id, """Good choice! 
-
-This is your Unique Cart Number (UCN): **"""+Backend_stuff[3]+"""**
-This is your Personal Transaction Number (PTN) (do not share this!): **"""+Backend_stuff[5]+"""**
-
-We will ask for payments once your Cart is full!
-
-For now, get your friends to join your Cart! :-)""")
+                bot.send_message(chat_id, finalMsg)
+                bot.send_message(chat_id, """Good choice!\nThis is your Personal Transaction Number (PTN) (do not share this!): """+Backend_stuff[5]+"""\nWe will ask for payments once your Cart is full!""")
                 Backend_stuff[6] = 1
+                bot.send_message(chat_id, """This is your Unique Cart Number (UCN): """+Backend_stuff[3]+"""\nFor now, get your friends to join your Cart! :-)""")
                 Thread(target=command_start(message)).start()
             else:
                 bot.send_message(
@@ -431,7 +430,7 @@ def join_link(message):
             itembtn3 = types.KeyboardButton('3')
             itembtn4 = types.KeyboardButton('Cancel')
             markup11.add(itembtn1, itembtn2, itembtn3, itembtn4)
-            msg = bot.reply_to(message, """Qty?""", reply_markup=markup11)
+            msg = bot.reply_to(message, """Qty? (Please type out the your qunatity if it's not available in the button)""", reply_markup=markup11)
             bot.register_next_step_handler(msg, join_qty)
     except Exception as e:
         bot.reply_to(message, 'oooops')
@@ -456,7 +455,7 @@ def join_qty(message):
             itembtn6 = types.KeyboardButton('Cancel')
             markup12.add(itembtn1, itembtn2, itembtn3,
                          itembtn4, itembtn5, itembtn6)
-            msg = bot.reply_to(message, """Size?""", reply_markup=markup12)
+            msg = bot.reply_to(message, """Size? (Please type out the your size if it's not available in the button)""", reply_markup=markup12)
             bot.register_next_step_handler(msg, join_size)
     except Exception as e:
         bot.reply_to(message, 'oooops')
@@ -504,6 +503,8 @@ def join_color(message):
             markup14.add(itembtn1, itembtn2)
             msg = bot.reply_to(message, """Title: """ + Joinitem[5] + '\nPrice: $' + str(Joinitem[6]) + '\nQty: ' + Joinitem[2] +
                                '\nSize: ' + Joinitem[3] + '\nColor: ' + Joinitem[4] + "\nDo you want to confirm this order?", reply_markup=markup14)
+            global finalMsg 
+            finalMsg = finalMsg + """Title: """ + Joinitem[5] + '\nPrice: $' + str(Joinitem[6]) + '\nQty: ' + Joinitem[2] + '\nSize: ' + Joinitem[3] + '\nColor: ' + Joinitem[4] + '\n\n'
             bot.register_next_step_handler(msg, join_confirm)
     except Exception as e:
         bot.reply_to(message, 'oooops')
@@ -551,14 +552,10 @@ def join_continue(message):
         else:
             Thread(target=command_start(message)).start()
             if (database.replace_ptn(Backend_stuff[5], Backend_stuff[2], Backend_stuff[0])):
-                bot.send_message(chat_id, """Good choice! 
-
-This is your Unique Cart Number (UCN): **"""+Joinitem[0]+"""**
-This is your Personal Transaction Number (PTN) (do not share this!): **"""+Backend_stuff[5]+"""**
-
-We will ask for payments once your Cart is full!
-
-For now, get your friends to join your Cart! :-)""")
+                bot.send_message(chat_id, finalMsg)
+                bot.send_message(chat_id, """Good choice!\n""" 
++"""This is your Personal Transaction Number (PTN) (do not share this!): """+Backend_stuff[5]+"""\nWe will ask for payments once your Cart is full!""")
+                bot.send_message(chat_id, """This is your Unique Cart Number (UCN): """+Joinitem[0]+"""For now, get your friends to join your Cart! :-)""")
                 Thread(target=command_start(message)).start()
             else:
                 bot.send_message(
