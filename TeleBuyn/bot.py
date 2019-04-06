@@ -80,7 +80,7 @@ def command_start(m):
     itembtn8 = types.KeyboardButton('/faq')
     markup.add(itembtn1, itembtn2, itembtn3, itembtn4,
                itembtn5, itembtn6, itembtn7, itembtn8)
-    update_stage(m.chat.id, start)
+    database.update_stage(m.chat.id, "start")
     bot.send_message(cid, "Welcome to Buyn", reply_markup=markup)
 
 
@@ -89,7 +89,7 @@ def command_start(m):
 @bot.message_handler(commands=['create'])
 def command_create(m):
     cid = m.chat.id
-    update_stage(m.chat.id, create)
+    database.update_stage(m.chat.id, create)
     Customeritem[0] = cid
     print(Customeritem[0])
     bot.send_chat_action(cid, 'typing') 
@@ -383,7 +383,7 @@ def create_continue(message):
 @bot.message_handler(commands=['join'])
 def command_join(m):
     cid = m.chat.id
-    update_stage(m.chat.id, join)
+    database.update_stage(m.chat.id, join)
     Joinitem[7] = cid
     bot.send_chat_action(cid, 'typing') 
     msg = bot.reply_to(
@@ -584,7 +584,7 @@ def join_continue(message):
 #ask for ptn
 @bot.message_handler(commands=['edit'])
 def command_edit(m):
-    update_stage(m.chat.id, edit)
+    database.update_stage(m.chat.id, edit)
     cid = m.chat.id
     Edititem[0] = cid
     bot.send_chat_action(cid, 'typing')
@@ -689,7 +689,7 @@ def edit_end(m):
 @bot.message_handler(commands=['faq'])
 def command_faq(m):
     cid = m.chat.id
-    update_stage(m.chat.id, 'faq')
+    database.update_stage(m.chat.id, 'faq')
     bot.send_chat_action(cid, 'typing')  # show the bot "typing" (max. 5 secs)
     bot.send_message(cid,
                      """Hello! Here is an exhaustive list of FAQ that our users have for us. Take a quick look!
@@ -719,7 +719,7 @@ You can have the option to extend your Cart’s waiting time or cancel your orde
 @bot.message_handler(commands=['brandlist'])
 def command_brandlist(m):
     cid = m.chat.id
-    update_stage(m.chat.id, 'brandList')
+    database.update_stage(m.chat.id, 'brandList')
     bot.send_chat_action(cid, 'typing')  # show the bot "typing" (max. 5 secs)
     bot.send_message(cid,
                      """Current brands on Buyn and their minimum basket size to qualify for free shipping!
@@ -762,7 +762,7 @@ We hope this helps. If you have any further queries feel free to visit our /faq 
 def command_recommend(m):
     try:
         cid = m.chat.id
-        update_stage(m.chat.id, 'recommend')
+        database.update_stage(m.chat.id, 'recommend')
         bot.send_chat_action(cid, 'typing')    
         msg = bot.reply_to(m, """Hey there! Please tell us your desired brand who is not currently on the platform.""")
         bot.register_next_step_handler(msg, recommend_input)
@@ -787,7 +787,7 @@ def recommend_input(m):
 def command_status(m):
     try:
         cid = m.chat.id
-        update_stage(m.chat.id, 'status')
+        database.update_stage(m.chat.id, 'status')
         markup18 = types.ReplyKeyboardMarkup(row_width=1, one_time_keyboard=True)
         itembtn1 = types.KeyboardButton('Query your bubble')
         itembtn2 = types.KeyboardButton('Query the bubble status')
@@ -892,4 +892,13 @@ bot.enable_save_next_step_handlers(delay=2)
 bot.load_next_step_handlers()
 
 
-bot.polling()
+while True:
+    try:
+        print("Starting to poll:")
+        bot.polling(none_stop=False, interval=0, timeout=20)
+    except KeyboardInterrupt:
+            print("User exit")
+            break
+    except Exception as err:
+            print("Got error sia")
+            print(err)
